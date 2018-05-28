@@ -17,7 +17,7 @@ For better package management however, I'd recommend [glide](https://github.com/
 First, let's import the package:
 
 ```go
-import "github.com/fadion/gofixerio"
+import "github.com/unkeep/gofixerio"
 ```
 
 Let's see an exhaustive example with all the parameters:
@@ -26,6 +26,7 @@ Let's see an exhaustive example with all the parameters:
 exchange := fixerio.New()
 
 exchange.Base(fixerio.EUR)
+exchange.ApiKey("YOUR_PERSONAL_API_KEY")
 exchange.Symbols(fixerio.USD, fixerio.AUD)
 exchange.Secure(true)
 exchange.Historical(time.Date(2016, time.December, 15, 0, 0, 0, 0, time.UTC))
@@ -34,8 +35,6 @@ if rates, err := exchange.GetRates(); err == nil {
     fmt.Println(rates[fixerio.USD])
 }
 ```
-
-Every parameter can be omitted as the package provides some sensible defaults. The base currency is `EUR`, makes a secure connection by default and returns all the supported currencies.
 
 ## Response
 
