@@ -1,22 +1,23 @@
 /*
 	Package Fixerio provides a simple interface to the
 	fixer.io API, a service for currency exchange rates.
- */
+*/
 package fixerio
 
 import (
-	"strings"
-	"net/http"
 	"encoding/json"
-	"time"
-	"bytes"
 	"errors"
+	"net/http"
+	urlLib "net/url"
+	"strings"
+	"time"
 )
 
 // Holds the request parameters.
 type Request struct {
 	base     string
 	protocol string
+	apiKey   string
 	date     string
 	symbols  []string
 }
@@ -25,18 +26,20 @@ type Request struct {
 type Response struct {
 	Base  string `json:"base"`
 	Date  string `json:"date"`
-	Rates rates `json:"rates"`
+	Rates rates  `json:"rates"`
 }
 
 type rates map[string]float32
 
-var baseUrl = "api.fixer.io"
+const host = "data.fixer.io"
+const apiPath = "api"
 
 // Initializes fixerio.
 func New() *Request {
 	return &Request{
-		base:     EUR,
+		base:     "",
 		protocol: "https",
+		apiKey:   "",
 		date:     "",
 		symbols:  make([]string, 0),
 	}
@@ -67,6 +70,11 @@ func (f *Request) Historical(date time.Time) {
 	f.date = date.Format("2006-01-02")
 }
 
+// Specify a unique key assigned to each API account used to authenticate with the API.
+func (f *Request) ApiKey(apiKey string) {
+	f.apiKey = apiKey
+}
+
 // Retrieve the exchange rates.
 func (f *Request) GetRates() (rates, error) {
 	url := f.GetUrl()
@@ -81,26 +89,33 @@ func (f *Request) GetRates() (rates, error) {
 
 // Formats the URL correctly for the API Request.
 func (f *Request) GetUrl() string {
-	var url bytes.Buffer
-
-	url.WriteString(f.protocol)
-	url.WriteString("://")
-	url.WriteString(baseUrl)
-	url.WriteString("/")
+	url := urlLib.URL{
+		Scheme: f.protocol,
+		Host:   host,
+		Path:   apiPath,
+	}
 
 	if f.date == "" {
-		url.WriteString("latest")
+		url.Path += "/latest"
 	} else {
-		url.WriteString(f.date)
+		url.Path += "/" + f.date
 	}
 
-	url.WriteString("?base=")
-	url.WriteString(string(f.base))
+	args := urlLib.Values{}
 
-	if len(f.symbols) >= 1 {
-		url.WriteString("&symbols=")
-		url.WriteString(strings.Join(f.symbols, ","))
+	if f.apiKey != "" {
+		args.Set("access_key", f.apiKey)
 	}
+
+	if f.base != "" {
+		args.Set("base", string(f.base))
+	}
+
+	if len(f.symbols) > 0 {
+		args.Set("symbols", strings.Join(f.symbols, ","))
+	}
+
+	url.RawQuery = args.Encode()
 
 	return url.String()
 }
