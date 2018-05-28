@@ -7,7 +7,7 @@ A thin wrapper in Go for [Fixer.io](http://www.fixer.io), a service for foreign 
 As for any other package, you can use `go get`:
 
 ```
-$ go get github.com/fadion/gofixerio
+$ go get github.com/unkeep/gofixerio
 ```
 
 For better package management however, I'd recommend [glide](https://github.com/Masterminds/glide) or the still in alpha [dep](https://github.com/golang/dep).
